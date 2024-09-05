@@ -39,3 +39,7 @@ let launch = {
 fs.writeFileSync(option.output, JSON.stringify(launch));
 
 spawn('code', [option.output]);
+
+setTimeout(() => {
+  fs.rm(option.output, () => {})
+}, 512)
