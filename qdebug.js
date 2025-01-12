@@ -33,7 +33,7 @@ let launch = {
   program: option.program,
   args: option.args,
   cwd: process.cwd(),
-  env: process.env
+  preRunCommands: ["b main"]
 }
 
 fs.writeFileSync(option.output, JSON.stringify(launch));
@@ -42,4 +42,4 @@ spawn('code', [option.output]);
 
 setTimeout(() => {
   fs.rm(option.output, () => {})
-}, 512)
+}, 10000)
