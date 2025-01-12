@@ -14,11 +14,25 @@
         "extensions": [ ".quickdebug" ]
     }],
     "activationEvents": [
-        "onStartupFinished"
+        "onStartupFinished",
+        "onCommand:quickdebug.sendToDebugger"
     ],
 
     "main": "./out/extension.js",
     "contributes": {
+        "commands": [
+            {
+                "command": "quickdebug.sendToDebugger",
+                "title": "Send to Debugger"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "quickdebug.sendToDebugger",
+                "key": "alt+d",
+                "when": "debuggersAvailable"
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
