@@ -8,38 +8,48 @@ const { spawn } = require('child_process');
 function parseArgv(argv){
   let index = 2
   let dir = ''
+  let type = 'gdb'
   while(index < argv.length){
-    if(!argv[index].startsWith('--')) {
+    let arg = argv[index]
+    if(!arg.startsWith('--')) {
       break
-    } else if(argv[index] == '--dir'){
+    } else if(arg == '--dir'){
       dir = argv[index+1]
       index = index + 2
+    } else if(arg == '--type'){
+      type = argv[index+1]
+      index = index + 2
     } else {
-      index = index + 1
+      throw "unknown argument: " + arg
     }
   }
   let output = path.join(dir, ".newDebug.quickdebug")
   let program = path.resolve(process.argv[index])
   let args = process.argv.slice(index + 1)
-  return { output, program, args }
+  return { output, type, program, args }
 }
 
-let option = parseArgv(process.argv)
-
-let launch = {
-  type: "lldb",
-  name: "newDebug",
-  request: "launch",
-  program: option.program,
-  args: option.args,
-  cwd: process.cwd(),
-  preRunCommands: ["b main"]
+function makeLaunch(type, program, args){
+  return {
+    type,
+    name: "qdebug " + type,
+    request: "launch",
+    program,
+    args,
+    cwd: process.cwd(),
+    preRunCommands: ["b main"]
+  }
 }
 
-fs.writeFileSync(option.output, JSON.stringify(launch));
+function main(){
+  let { output, type, program, args } = parseArgv(process.argv)
+  let launch = makeLaunch(type, program, args)
+  fs.writeFileSync(output, JSON.stringify(launch));
+  
+  spawn('code', [output]);
+  setTimeout(() => {
+    fs.rm(output, () => {})
+  }, 10000)
+}
 
-spawn('code', [option.output]);
-
-setTimeout(() => {
-  fs.rm(option.output, () => {})
-}, 10000)
+main()
