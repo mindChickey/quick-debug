@@ -47,9 +47,6 @@ function main(){
   fs.writeFileSync(output, JSON.stringify(launch));
   
   spawn('code', [output]);
-  setTimeout(() => {
-    fs.rm(output, () => {})
-  }, 10000)
 }
 
 main()

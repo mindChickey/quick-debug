@@ -35,13 +35,28 @@ async function sendToDebugger() {
   }
 }
 
-function startDebugging(e: vscode.TextDocument) {
+async function startDebugging(e: vscode.TextDocument) {
   if(e.fileName.endsWith('.quickdebug')){
     let info = JSON.parse(e.getText())
     let tab = vscode.window.tabGroups.activeTabGroup.activeTab
-    if(tab) vscode.window.tabGroups.close(tab, true)
+    if(tab) await vscode.window.tabGroups.close(tab, true)
+    try {
+      await vscode.workspace.fs.delete(e.uri)
+    } catch {}
 
     vscode.debug.startDebugging(undefined, info)
+  }
+}
+
+function scanTabs() {
+  for (const group of vscode.window.tabGroups.all) {
+    for (const tab of group.tabs) {
+      const input = tab.input
+      if (!(input instanceof vscode.TabInputText)) continue
+      if (!input.uri.fsPath.endsWith('.quickdebug')) continue
+      const doc = vscode.workspace.textDocuments.find(d => d.uri.toString() === input.uri.toString())
+      if (doc) startDebugging(doc)
+    }
   }
 }
 
@@ -53,6 +68,8 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.workspace.onDidOpenTextDocument(startDebugging)
   )
+
+  scanTabs()
 }
 
 export function deactivate() {}
